@@ -1,0 +1,1060 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Project Details - Mini Dashboard</title>
+    <style>
+        /* ============ CSS VARIABLES (Light Theme) ============ */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f4f6f8;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --accent: #0073bb;
+            --accent-hover: #005a94;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --success: #16a34a;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+            --radius: 8px;
+            --transition: 0.2s ease;
+        }
+
+        /* ============ DARK THEME ============ */
+        [data-theme="dark"] {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-card: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --accent: #60a5fa;
+            --accent-hover: #93c5fd;
+            --danger: #f87171;
+            --danger-bg: #1c1917;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.4);
+        }
+
+        /* ============ RESET & BASE ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            transition: background var(--transition), color var(--transition);
+            min-height: 100vh;
+        }
+
+        /* ============ LAYOUT ============ */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* ============ HEADER ============ */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 18px 24px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* ============ BUTTONS ============ */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #ffffff;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ============ CONTROLS BAR ============ */
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 220px;
+            padding: 9px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color var(--transition);
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 115, 187, 0.1);
+        }
+
+        .filter-select {
+            padding: 9px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            min-width: 120px;
+            transition: border-color var(--transition);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* ============ SUMMARY BAR ============ */
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 4px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .summary-count {
+            font-weight: 600;
+        }
+
+        .load-status {
+            color: var(--success);
+            font-size: 0.8rem;
+            transition: opacity 0.5s;
+        }
+
+        /* ============ TABLE ============ */
+        .table-wrapper {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-secondary);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-right: 26px;
+        }
+
+        th.sortable:hover {
+            color: var(--accent);
+        }
+
+        th.sortable::after {
+            content: '\2195';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.3;
+            font-size: 0.85rem;
+        }
+
+        th.sortable.asc::after {
+            content: '\2191';
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        th.sortable.desc::after {
+            content: '\2193';
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        td {
+            padding: 11px 16px;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        tbody tr {
+            transition: background var(--transition);
+        }
+
+        tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ============ SPECIAL CELL STYLES ============ */
+        .cell-na {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.82rem;
+        }
+
+        .cell-overdue {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .overdue-badge {
+            display: inline-block;
+            background: var(--danger-bg);
+            color: var(--danger);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            text-transform: uppercase;
+        }
+
+        /* ============ EMPTY STATE ============ */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            display: none;
+        }
+
+        .empty-state-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .empty-state-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .empty-state-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ============ LOADING STATE ============ */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* ============ ERROR STATE ============ */
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            display: none;
+        }
+
+        .error-state-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .error-state-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--danger);
+            margin-bottom: 6px;
+        }
+
+        .error-state-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* ============ MODAL ============ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 28px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .form-label .required {
+            color: var(--danger);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color var(--transition);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 115, 187, 0.1);
+        }
+
+        .form-input.error,
+        .form-select.error {
+            border-color: var(--danger);
+        }
+
+        .form-error {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            .header {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .search-box,
+            .filter-select {
+                width: 100%;
+                min-width: unset;
+            }
+            .summary {
+                flex-direction: column;
+                gap: 4px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="header">
+            <h1>Daily Project Details</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="themeToggle">&#9790; Dark</button>
+                <button class="btn btn-primary" id="btnAddEntry">+ Add Entry</button>
+            </div>
+        </header>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search by username..." aria-label="Search by username">
+            <select class="filter-select" id="filterSite" aria-label="Filter by site">
+                <option value="">All Sites</option>
+                <option value="IN">IN</option>
+                <option value="EU">EU</option>
+                <option value="CN">CN</option>
+            </select>
+            <select class="filter-select" id="filterRole" aria-label="Filter by role">
+                <option value="">All Roles</option>
+                <option value="CO">CO</option>
+                <option value="PO">PO</option>
+            </select>
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="summary">
+            <span class="summary-count" id="summaryCount">Showing 0 of 0</span>
+            <span class="load-status" id="loadStatus"></span>
+        </div>
+
+        <!-- TABLE AREA -->
+        <div class="table-wrapper">
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState">
+                <div class="spinner"></div>
+                <p class="loading-text">Loading project data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-state" id="errorState">
+                <div class="error-state-icon">&#9888;&#65039;</div>
+                <p class="error-state-title">Failed to load data</p>
+                <p class="error-state-desc">Could not load entries.json. Make sure the file exists in the same folder as this HTML file.</p>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">&#128269;</div>
+                <p class="empty-state-title">No matching entries</p>
+                <p class="empty-state-desc">Try adjusting your search term or clearing the filters.</p>
+            </div>
+
+            <!-- Data Table -->
+            <table id="dataTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-column="username">Username</th>
+                        <th>Site</th>
+                        <th>Active Project</th>
+                        <th>Role</th>
+                        <th>Type of WF</th>
+                        <th class="sortable" data-column="projectHours">Project Hours</th>
+                        <th>Individual ETA</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ADD ENTRY MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" role="dialog" aria-labelledby="modalTitle">
+            <h2 class="modal-title" id="modalTitle">Add New Entry</h2>
+
+            <div class="form-group">
+                <label class="form-label">Username <span class="required">*</span></label>
+                <input type="text" class="form-input" id="inputUsername" placeholder="e.g., john_d">
+                <p class="form-error" id="errorUsername">Username is required.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Site <span class="required">*</span></label>
+                <select class="form-select" id="inputSite">
+                    <option value="">-- Select Site --</option>
+                    <option value="IN">IN</option>
+                    <option value="EU">EU</option>
+                    <option value="CN">CN</option>
+                </select>
+                <p class="form-error" id="errorSite">Please select a site.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Active Project</label>
+                <input type="text" class="form-input" id="inputProject" placeholder="e.g., MANTIS-Catalog-Auth">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Role <span class="required">*</span></label>
+                <select class="form-select" id="inputRole">
+                    <option value="">-- Select Role --</option>
+                    <option value="CO">CO</option>
+                    <option value="PO">PO</option>
+                </select>
+                <p class="form-error" id="errorRole">Please select a role.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Type of WF</label>
+                <input type="text" class="form-input" id="inputWF" placeholder="e.g., Deep Dive">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Project Hours</label>
+                <input type="number" class="form-input" id="inputHours" placeholder="e.g., 40" min="0">
+                <p class="form-error" id="errorHours">Hours must be 0 or greater.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Individual ETA</label>
+                <input type="date" class="form-input" id="inputETA">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancel">Cancel</button>
+                <button class="btn btn-primary" id="btnSave">Save Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ JAVASCRIPT ============ -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ===== STATE =====
+        var allEntries = [];
+        var sortCol = null;
+        var sortDir = 'asc'; // 'asc' or 'desc'
+
+        // ===== DOM REFERENCES =====
+        var searchInput = document.getElementById('searchInput');
+        var filterSite = document.getElementById('filterSite');
+        var filterRole = document.getElementById('filterRole');
+        var summaryCount = document.getElementById('summaryCount');
+        var loadStatus = document.getElementById('loadStatus');
+        var loadingState = document.getElementById('loadingState');
+        var errorState = document.getElementById('errorState');
+        var emptyState = document.getElementById('emptyState');
+        var dataTable = document.getElementById('dataTable');
+        var tableBody = document.getElementById('tableBody');
+        var modalOverlay = document.getElementById('modalOverlay');
+        var themeToggle = document.getElementById('themeToggle');
+
+        // ===== INITIALIZATION =====
+        function init() {
+            loadTheme();
+            loadData();
+            bindEvents();
+        }
+
+        // ===== DATA LOADING (via fetch) =====
+        function loadData() {
+            showLoading();
+
+            // Try to load from localStorage first (for added entries persistence)
+            var stored = localStorage.getItem('mantis_dashboard_entries');
+            if (stored) {
+                try {
+                    allEntries = JSON.parse(stored);
+                    hideLoading();
+                    showTable();
+                    render();
+                    flashStatus('Loaded from local storage');
+                    return;
+                } catch (e) {
+                    // Fall through to fetch
+                }
+            }
+
+            // Fetch entries.json
+            fetch('entries.json')
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    allEntries = data;
+                    hideLoading();
+                    showTable();
+                    render();
+                    flashStatus('Data loaded successfully');
+                })
+                .catch(function(err) {
+                    hideLoading();
+                    showError();
+                });
+        }
+
+        // ===== UI STATE HELPERS =====
+        function showLoading() {
+            loadingState.style.display = 'block';
+            errorState.style.display = 'none';
+            emptyState.style.display = 'none';
+            dataTable.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loadingState.style.display = 'none';
+        }
+
+        function showError() {
+            errorState.style.display = 'block';
+            dataTable.style.display = 'none';
+            emptyState.style.display = 'none';
+            summaryCount.textContent = 'Showing 0 of 0';
+        }
+
+        function showTable() {
+            dataTable.style.display = 'table';
+            errorState.style.display = 'none';
+        }
+
+        function flashStatus(msg) {
+            loadStatus.textContent = msg;
+            loadStatus.style.opacity = '1';
+            setTimeout(function() {
+                loadStatus.style.opacity = '0';
+            }, 3000);
+        }
+
+        // ===== FILTERING =====
+        function getFilteredEntries() {
+            var searchTerm = searchInput.value.toLowerCase().trim();
+            var siteVal = filterSite.value;
+            var roleVal = filterRole.value;
+
+            return allEntries.filter(function(entry) {
+                // Search by username
+                var matchesSearch = true;
+                if (searchTerm) {
+                    var username = (entry.username || '').toLowerCase();
+                    matchesSearch = username.indexOf(searchTerm) !== -1;
+                }
+
+                // Filter by site
+                var matchesSite = true;
+                if (siteVal) {
+                    matchesSite = entry.site === siteVal;
+                }
+
+                // Filter by role
+                var matchesRole = true;
+                if (roleVal) {
+                    matchesRole = entry.role === roleVal;
+                }
+
+                return matchesSearch && matchesSite && matchesRole;
+            });
+        }
+
+        // ===== SORTING =====
+        function sortEntries(entries) {
+            if (!sortCol) return entries;
+
+            var sorted = entries.slice(); // copy
+            sorted.sort(function(a, b) {
+                var valA, valB;
+
+                if (sortCol === 'username') {
+                    valA = (a.username || '').toLowerCase();
+                    valB = (b.username || '').toLowerCase();
+                    if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                    if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                if (sortCol === 'projectHours') {
+                    valA = (a.projectHours === null || a.projectHours === undefined) ? -1 : Number(a.projectHours);
+                    valB = (b.projectHours === null || b.projectHours === undefined) ? -1 : Number(b.projectHours);
+                    return sortDir === 'asc' ? valA - valB : valB - valA;
+                }
+
+                return 0;
+            });
+
+            return sorted;
+        }
+
+        // ===== RENDERING =====
+        function render() {
+            var filtered = getFilteredEntries();
+            var sorted = sortEntries(filtered);
+
+            // Update summary
+            summaryCount.textContent = 'Showing ' + sorted.length + ' of ' + allEntries.length;
+
+            // Empty state check
+            if (sorted.length === 0) {
+                dataTable.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            dataTable.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            // Build rows
+            var html = '';
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (var i = 0; i < sorted.length; i++) {
+                var entry = sorted[i];
+                var isOverdue = checkOverdue(entry, today);
+
+                html += '<tr>';
+                html += '<td>' + displayValue(entry.username) + '</td>';
+                html += '<td>' + displayValue(entry.site) + '</td>';
+                html += '<td>' + displayValue(entry.activeProject) + '</td>';
+                html += '<td>' + displayValue(entry.role) + '</td>';
+                html += '<td>' + displayValue(entry.typeOfWF) + '</td>';
+                html += '<td>' + displayHours(entry.projectHours) + '</td>';
+                html += '<td>' + displayETA(entry.individualETA, isOverdue) + '</td>';
+                html += '</tr>';
+            }
+
+            tableBody.innerHTML = html;
+        }
+
+        // ===== DISPLAY HELPERS =====
+        function isEmpty(val) {
+            return val === null || val === undefined || val === '' || val === 'TBD' || val === 'tbd';
+        }
+
+        function displayValue(val) {
+            if (isEmpty(val)) {
+                return '<span class="cell-na">N/A</span>';
+            }
+            return escapeHtml(String(val));
+        }
+
+        function displayHours(val) {
+            if (val === null || val === undefined || val === '') {
+                return '<span class="cell-na">N/A</span>';
+            }
+            return escapeHtml(String(val));
+        }
+
+        function displayETA(val, isOverdue) {
+            if (isEmpty(val)) {
+                return '<span class="cell-na">N/A</span>';
+            }
+
+            var formatted = formatDate(val);
+
+            if (isOverdue) {
+                return '<span class="cell-overdue">' + escapeHtml(formatted) + '</span><span class="overdue-badge">Overdue</span>';
+            }
+
+            return escapeHtml(formatted);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'N/A';
+            var parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var monthIndex = parseInt(parts[1], 10) - 1;
+            if (monthIndex < 0 || monthIndex > 11) return dateStr;
+
+            return parseInt(parts[2], 10) + ' ' + months[monthIndex] + ' ' + parts[0];
+        }
+
+        function checkOverdue(entry, today) {
+            // Overdue = ETA is in the past AND has an active project assigned
+            if (isEmpty(entry.individualETA)) return false;
+            if (isEmpty(entry.activeProject)) return false;
+
+            var etaDate = new Date(entry.individualETA + 'T00:00:00');
+            return etaDate < today;
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        // ===== THEME =====
+        function loadTheme() {
+            var saved = localStorage.getItem('mantis_dashboard_theme');
+            if (saved === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '&#9788; Light';
+            }
+        }
+
+        function toggleTheme() {
+            var isDark = document.body.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.body.removeAttribute('data-theme');
+                themeToggle.innerHTML = '&#9790; Dark';
+                localStorage.setItem('mantis_dashboard_theme', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '&#9788; Light';
+                localStorage.setItem('mantis_dashboard_theme', 'dark');
+            }
+        }
+
+        // ===== MODAL =====
+        function openModal() {
+            clearFormErrors();
+            document.getElementById('inputUsername').value = '';
+            document.getElementById('inputSite').value = '';
+            document.getElementById('inputProject').value = '';
+            document.getElementById('inputRole').value = '';
+            document.getElementById('inputWF').value = '';
+            document.getElementById('inputHours').value = '';
+            document.getElementById('inputETA').value = '';
+            modalOverlay.classList.add('active');
+            document.getElementById('inputUsername').focus();
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        function saveEntry() {
+            if (!validateForm()) return;
+
+            var newEntry = {
+                username: document.getElementById('inputUsername').value.trim(),
+                site: document.getElementById('inputSite').value,
+                activeProject: document.getElementById('inputProject').value.trim() || null,
+                role: document.getElementById('inputRole').value,
+                typeOfWF: document.getElementById('inputWF').value.trim() || null,
+                projectHours: document.getElementById('inputHours').value !== '' ? Number(document.getElementById('inputHours').value) : null,
+                individualETA: document.getElementById('inputETA').value || null
+            };
+
+            allEntries.push(newEntry);
+            localStorage.setItem('mantis_dashboard_entries', JSON.stringify(allEntries));
+            closeModal();
+            render();
+            flashStatus('Entry added successfully');
+        }
+
+        // ===== FORM VALIDATION =====
+        function validateForm() {
+            var isValid = true;
+            clearFormErrors();
+
+            var username = document.getElementById('inputUsername').value.trim();
+            if (!username) {
+                showFieldError('inputUsername', 'errorUsername');
+                isValid = false;
+            }
+
+            var site = document.getElementById('inputSite').value;
+            if (!site) {
+                showFieldError('inputSite', 'errorSite');
+                isValid = false;
+            }
+
+            var role = document.getElementById('inputRole').value;
+            if (!role) {
+                showFieldError('inputRole', 'errorRole');
+                isValid = false;
+            }
+
+            var hours = document.getElementById('inputHours').value;
+            if (hours !== '' && Number(hours) < 0) {
+                showFieldError('inputHours', 'errorHours');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showFieldError(inputId, errorId) {
+            document.getElementById(inputId).classList.add('error');
+            document.getElementById(errorId).style.display = 'block';
+        }
+
+        function clearFormErrors() {
+            var inputs = document.querySelectorAll('.form-input, .form-select');
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].classList.remove('error');
+            }
+            var errors = document.querySelectorAll('.form-error');
+            for (var j = 0; j < errors.length; j++) {
+                errors[j].style.display = 'none';
+            }
+        }
+
+        // ===== EVENT BINDING =====
+        function bindEvents() {
+            // Search & Filters
+            searchInput.addEventListener('input', render);
+            filterSite.addEventListener('change', render);
+            filterRole.addEventListener('change', render);
+
+            // Sorting
+            var sortHeaders = document.querySelectorAll('th.sortable');
+            for (var i = 0; i < sortHeaders.length; i++) {
+                sortHeaders[i].addEventListener('click', handleSort);
+            }
+
+            // Theme
+            themeToggle.addEventListener('click', toggleTheme);
+
+            // Modal
+            document.getElementById('btnAddEntry').addEventListener('click', openModal);
+            document.getElementById('btnCancel').addEventListener('click', closeModal);
+            document.getElementById('btnSave').addEventListener('click', saveEntry);
+
+            // Close modal on overlay click
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        }
+
+        function handleSort(e) {
+            var col = e.currentTarget.getAttribute('data-column');
+
+            // Update sort state
+            if (sortCol === col) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortCol = col;
+                sortDir = 'asc';
+            }
+
+            // Update header classes
+            var allSortable = document.querySelectorAll('th.sortable');
+            for (var i = 0; i < allSortable.length; i++) {
+                allSortable[i].classList.remove('asc', 'desc');
+            }
+            e.currentTarget.classList.add(sortDir);
+
+            render();
+        }
+
+        // ===== START =====
+        init();
+
+    })();
+    </script>
+</body>
+</html>
